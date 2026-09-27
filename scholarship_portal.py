@@ -239,20 +239,32 @@ def main(page: ft.Page):
             has_errors = True
 
         # 2. Validate Student ID
-        # TODO: Wrap validate_student_id in try...except and set id_field.error
-        clean_id = None
+        try:
+            clean_id = ScholarshipValidator.validate_student_id(id_field.value)
+        except ScholarshipValidationError as err:
+            id_field.error = str(err)
+            has_errors = True
 
         # 3. Validate Email
-        # TODO: Wrap validate_email in try...except and set email_field.error
-        clean_email = None
+        try:
+            clean_email = ScholarshipValidator.validate_email(email_field.value)
+        except ScholarshipValidationError as err:
+            email_field.error = str(err)
+            has_errors = True
 
         # 4. Validate Phone
-        # TODO: Wrap validate_phone in try...except and set phone_field.error
-        clean_phone = None
+        try:
+            clean_phone = ScholarshipValidator.validate_phone(phone_field.value)
+        except ScholarshipValidationError as err:
+            phone_field.error = str(err)
+            has_errors = True
 
         # 5. Validate GWA
-        # TODO: Wrap validate_gwa in try...except and set gwa_field.error
-        clean_gwa = None
+        try:
+            clean_gwa = ScholarshipValidator.validate_gwa(gwa_field.value)
+        except ScholarshipValidationError as err:
+            gwa_field.error = str(err)
+            has_errors = True
 
         # 6. Validate Program Selection
         if not program_dropdown.value:
@@ -261,6 +273,8 @@ def main(page: ft.Page):
 
         # If any validation errors occurred, abort and notify
         if has_errors:
+            status_summary.value = "Please correct the highlighted fields and try again."
+            status_summary.color = ft.Colors.RED_300
             page.show_dialog(
                 ft.SnackBar(
                     content=ft.Text("Validation failed: Please correct highlighted fields."),
@@ -272,9 +286,35 @@ def main(page: ft.Page):
             return
 
         # 7. All Validations Passed: Instantiate Domain Contract
-        # TODO: Construct ScholarshipApplicant dataclass object
-        # TODO: Append to approved_applicants list
-        # TODO: Display green success SnackBar and reset form fields
+        applicant = ScholarshipApplicant(
+            full_name=clean_name,
+            student_id=clean_id,
+            email=clean_email,
+            phone=clean_phone,
+            gwa=clean_gwa,
+            program=program_dropdown.value
+        )
+        approved_applicants.append(applicant)
+
+        status_summary.value = (
+            f"Application submitted successfully. "
+            f"{len(approved_applicants)} application(s) received this session."
+        )
+        status_summary.color = ft.Colors.GREEN_300
+        page.show_dialog(
+            ft.SnackBar(
+                content=ft.Text("Scholarship application submitted successfully."),
+                bgcolor=ft.Colors.GREEN_700,
+                behavior=ft.SnackBarBehavior.FLOATING
+            )
+        )
+
+        name_field.value = ""
+        id_field.value = ""
+        email_field.value = ""
+        phone_field.value = ""
+        gwa_field.value = ""
+        program_dropdown.value = None
 
         page.update()
 
@@ -330,4 +370,3 @@ def main(page: ft.Page):
 
 if __name__ == "__main__":
     ft.run(main)
-
