@@ -147,7 +147,7 @@ class ScholarshipValidator:
         # TODO: Implement defensive float parsing and range check
         clean = cls.sanitize_string(value)
         if not clean:
-            raise GWARangeError("GWA is required.")
+            raise GWARangeError("Academic GWA is required.")
         try:
             gwa = float(clean)
         except ValueError:
@@ -326,7 +326,7 @@ def main(page: ft.Page):
             email=clean_email,
             phone=clean_phone,
             gwa=clean_gwa,
-            program=program_dropdown.value
+            program=program_dropdown.value or ""
         )
         approved_applicants.append(applicant)
 
@@ -337,7 +337,7 @@ def main(page: ft.Page):
         status_summary.color = ft.Colors.GREEN_300
         page.show_dialog(
             ft.SnackBar(
-                content=ft.Text("Scholarship application submitted successfully."),
+                content=ft.Text(f"Application accepted for {clean_name}!"),
                 bgcolor=ft.Colors.GREEN_700,
                 behavior=ft.SnackBarBehavior.FLOATING
             )
