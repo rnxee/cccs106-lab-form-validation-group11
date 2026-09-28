@@ -248,7 +248,7 @@ def main(page: ft.Page):
     email_field.on_change = clear_field_error
     phone_field.on_change = clear_field_error
     gwa_field.on_change = clear_field_error
-    program_dropdown.on_change = clear_dropdown_error
+    program_dropdown.on_select = clear_dropdown_error
 
     # ------------------------------------------------------------------------
     # FORM SUBMISSION & MULTI-TIER DEFENSIVE PIPELINE
