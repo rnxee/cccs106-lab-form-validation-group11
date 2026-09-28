@@ -124,7 +124,17 @@ class ScholarshipValidator:
         Raises: ScholarshipValidationError if invalid.
         """
         # TODO: Implement phone validation using cls.PH_PHONE_REGEX
-        pass
+        clean = cls.sanitize_string(value)
+        if not clean:
+            raise ScholarshipValidationError("Mobile number is required.")
+        if not cls.PH_PHONE_REGEX.match(clean):
+            raise ScholarshipValidationError("Invalid mobile number. Expected: 09XXXXXXXXX or +639XXXXXXXXX.")
+        
+        # Standardize +63 prefix to the local 0 Format
+        if clean.startswith("+63"):
+            clean = "0" + clean[3:]
+        return clean
+        
 
     @classmethod
     def validate_gwa(cls, value: Optional[str]) -> float:
