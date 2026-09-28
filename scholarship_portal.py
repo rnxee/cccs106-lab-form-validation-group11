@@ -92,7 +92,13 @@ class ScholarshipValidator:
         Raises: IDFormatError if invalid.
         """
         # TODO: Implement ID validation using cls.STUDENT_ID_REGEX
-        pass
+        clean = cls.sanitize_string(value)
+        if not clean:
+            raise IDFormatError("Student ID is required.")
+        if not cls.STUDENT_ID_REGEX.match(clean):
+            raise IDFormatError("Use the format YYYY-NNNN (e.g., 2024-0123).")
+        return clean
+
 
     @classmethod
     def validate_email(cls, value: Optional[str]) -> str:
@@ -102,7 +108,13 @@ class ScholarshipValidator:
         Raises: EmailDomainError if invalid.
         """
         # TODO: Implement email validation using cls.CSPC_EMAIL_REGEX
-        pass
+        clean = cls.sanitize_string(value).lower()
+        if not clean:
+            raise EmailDomainError("Institutional email is required.")
+        if not cls.CSPC_EMAIL_REGEX.match(clean):
+            raise EmailDomainError("Email must be a valid @cspc.edu.ph address.")
+        return clean
+
 
     @classmethod
     def validate_phone(cls, value: Optional[str]) -> str:
@@ -112,7 +124,18 @@ class ScholarshipValidator:
         Raises: ScholarshipValidationError if invalid.
         """
         # TODO: Implement phone validation using cls.PH_PHONE_REGEX
-        pass
+        # Removes common separators users type (spaces, dashes, parentheses)
+        clean = re.sub(r"[\s\-()]", "", cls.sanitize_string(value))
+        if not clean:
+            raise ScholarshipValidationError("Mobile number is required.")
+        if not cls.PH_PHONE_REGEX.match(clean):
+            raise ScholarshipValidationError("Invalid mobile number. Expected: 09XXXXXXXXX or +639XXXXXXXXX.")
+        
+        # Standardize +63 prefix to the local 0 Format
+        if clean.startswith("+63"):
+            clean = "0" + clean[3:]
+        return clean
+        
 
     @classmethod
     def validate_gwa(cls, value: Optional[str]) -> float:
@@ -122,7 +145,18 @@ class ScholarshipValidator:
         Raises: GWARangeError if out of bounds or non-numeric.
         """
         # TODO: Implement defensive float parsing and range check
-        pass
+        clean = cls.sanitize_string(value)
+        if not clean:
+            raise GWARangeError("GWA is required.")
+        try:
+            gwa = float(clean)
+        except ValueError:
+            raise GWARangeError("GWA must be a number (e.g., 1.75).") from None
+        
+        # Written as a negated chain so NaN also fails the check
+        if not (1.00 <= gwa <= 5.00):
+            raise GWARangeError("GWA must be between 1.00 and 5.00.")
+        return round(gwa, 2)
 
 
 # ============================================================================
@@ -280,7 +314,7 @@ def main(page: ft.Page):
     email_field.on_change = clear_field_error
     phone_field.on_change = clear_field_error
     gwa_field.on_change = clear_field_error
-    program_dropdown.on_change = clear_dropdown_error
+    program_dropdown.on_select = clear_dropdown_error
 
     # ------------------------------------------------------------------------
     # FORM SUBMISSION & MULTI-TIER DEFENSIVE PIPELINE
