@@ -124,7 +124,8 @@ class ScholarshipValidator:
         Raises: ScholarshipValidationError if invalid.
         """
         # TODO: Implement phone validation using cls.PH_PHONE_REGEX
-        clean = cls.sanitize_string(value)
+        # Removes common separators users type (spaces, dashes, parentheses)
+        clean = re.sub(r"[\s\-()]", "", cls.sanitize_string(value))
         if not clean:
             raise ScholarshipValidationError("Mobile number is required.")
         if not cls.PH_PHONE_REGEX.match(clean):
