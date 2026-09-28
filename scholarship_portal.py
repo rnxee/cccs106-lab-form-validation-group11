@@ -189,11 +189,76 @@ def main(page: ft.Page):
         ]
     )
 
-    status_summary = ft.Text(
-        value="Ready to accept applications.",
-        color=ft.Colors.GREY_400,
-        size=13
+    application_count = ft.Text(
+        value="Applications registered this session: 0",
+        color=ft.Colors.GREY_300,
+        size=13,
+        semantics_label="Applications registered this session: 0"
     )
+
+    recent_applications = ft.Column(
+        controls=[
+            ft.Text(
+                "No applications have been submitted this session yet.",
+                color=ft.Colors.GREY_400,
+                size=13
+            )
+        ],
+        spacing=8
+    )
+
+    def refresh_recent_applications():
+        application_count.value = (
+            f"Applications registered this session: {len(approved_applicants)}"
+        )
+        application_count.semantics_label = application_count.value
+
+        recent_applications.controls = [
+            ft.Container(
+                content=ft.Row(
+                    controls=[
+                        ft.Icon(
+                            ft.Icons.VERIFIED,
+                            color=ft.Colors.LIGHT_GREEN_400,
+                            size=22
+                        ),
+                        ft.Column(
+                            controls=[
+                                ft.Text(
+                                    f"{applicant.full_name} ({applicant.student_id})",
+                                    weight=ft.FontWeight.BOLD,
+                                    size=13
+                                ),
+                                ft.Text(
+                                    f"{applicant.program} · GWA: {applicant.gwa:.2f} · {applicant.email}",
+                                    color=ft.Colors.GREY_300,
+                                    size=11
+                                )
+                            ],
+                            spacing=2,
+                            expand=True
+                        ),
+                        ft.Text(
+                            applicant.submitted_at.strftime("%H:%M:%S"),
+                            color=ft.Colors.GREY_400,
+                            size=11
+                        )
+                    ],
+                    spacing=10,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER
+                ),
+                bgcolor=ft.Colors.SURFACE_CONTAINER_LOW,
+                border_radius=8,
+                padding=12
+            )
+            for applicant in reversed(approved_applicants[-5:])
+        ] or [
+            ft.Text(
+                "No applications have been submitted this session yet.",
+                color=ft.Colors.GREY_400,
+                size=13
+            )
+        ]
 
     # ------------------------------------------------------------------------
     # REAL-TIME ERROR CLEARING HANDLERS (UX ENHANCEMENT)
@@ -273,8 +338,6 @@ def main(page: ft.Page):
 
         # If any validation errors occurred, abort and notify
         if has_errors:
-            status_summary.value = "Please correct the highlighted fields and try again."
-            status_summary.color = ft.Colors.RED_300
             page.show_dialog(
                 ft.SnackBar(
                     content=ft.Text("Validation failed: Please correct highlighted fields."),
@@ -295,12 +358,7 @@ def main(page: ft.Page):
             program=program_dropdown.value
         )
         approved_applicants.append(applicant)
-
-        status_summary.value = (
-            f"Application submitted successfully. "
-            f"{len(approved_applicants)} application(s) received this session."
-        )
-        status_summary.color = ft.Colors.GREEN_300
+        refresh_recent_applications()
         page.show_dialog(
             ft.SnackBar(
                 content=ft.Text("Scholarship application submitted successfully."),
@@ -360,7 +418,24 @@ def main(page: ft.Page):
                 ft.Container(height=10),
                 submit_button,
                 ft.Container(height=5),
-                status_summary
+                application_count,
+                ft.Divider(height=16, color=ft.Colors.OUTLINE_VARIANT),
+                ft.Row(
+                    controls=[
+                        ft.Icon(
+                            ft.Icons.HISTORY,
+                            size=18,
+                            color=ft.Colors.BLUE_300
+                        ),
+                        ft.Text(
+                            "Recent Session Intake Contracts (In-Memory Pre-Persistence)",
+                            weight=ft.FontWeight.BOLD,
+                            size=14
+                        )
+                    ],
+                    spacing=8
+                ),
+                recent_applications
             ],
             spacing=14,
             scroll=ft.ScrollMode.AUTO
