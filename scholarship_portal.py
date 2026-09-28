@@ -144,7 +144,18 @@ class ScholarshipValidator:
         Raises: GWARangeError if out of bounds or non-numeric.
         """
         # TODO: Implement defensive float parsing and range check
-        pass
+        clean = cls.sanitize_string(value)
+        if not clean:
+            raise GWARangeError("GWA is required.")
+        try:
+            gwa = float(clean)
+        except ValueError:
+            raise GWARangeError("GWA must be a number (e.g., 1.75).") from None
+        
+        # Written as a negated chain so NaN also fails the check
+        if not (1.00 <= gwa <= 5.00):
+            raise GWARangeError("GWA must be between 1.00 and 5.00.")
+        return round(gwa, 2)
 
 
 # ============================================================================
