@@ -108,7 +108,13 @@ class ScholarshipValidator:
         Raises: EmailDomainError if invalid.
         """
         # TODO: Implement email validation using cls.CSPC_EMAIL_REGEX
-        pass
+        clean = cls.sanitize_string(value).lower()
+        if not clean:
+            raise EmailDomainError("Institutional email is required.")
+        if not cls.CSPC_EMAIL_REGEX.match(clean):
+            raise EmailDomainError("Email must be a valid @cspc.edu.ph address.")
+        return clean
+
 
     @classmethod
     def validate_phone(cls, value: Optional[str]) -> str:
