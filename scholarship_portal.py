@@ -166,7 +166,7 @@ class ScholarshipValidator:
 def main(page: ft.Page):
     page.title = "CSPC Scholarship Intake Portal"
     page.window.width = 620
-    page.window.height = 780
+    page.window.height = 950
     page.window.resizable = False
     page.theme_mode = ft.ThemeMode.DARK
     page.padding = 25
